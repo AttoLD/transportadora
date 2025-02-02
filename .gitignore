@@ -24,4 +24,6 @@ ENV/
 .env.*
 
 # Outros
-instance/ 
+instance/*.db
+instance/*.sqlite3
+!instance/.gitkeep 
