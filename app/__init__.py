@@ -22,8 +22,8 @@ def create_app(config_class=Config):
 
     from app.routes import main, movimentos, relatorios, auth
     app.register_blueprint(main.bp)
-    app.register_blueprint(movimentos.bp)
-    app.register_blueprint(relatorios.bp)
-    app.register_blueprint(auth.bp)
+    app.register_blueprint(movimentos.bp, url_prefix='/movimentos')
+    app.register_blueprint(relatorios.bp, url_prefix='/relatorios')
+    app.register_blueprint(auth.bp, url_prefix='/auth')
 
     return app 
