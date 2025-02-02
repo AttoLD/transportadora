@@ -3,7 +3,7 @@ services:
     name: transportadora
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app
+    startCommand: gunicorn wsgi:app --log-level debug
     envVars:
       - key: FLASK_APP
         value: wsgi.py
@@ -11,3 +11,5 @@ services:
         value: production
       - key: RENDER
         value: true
+      - key: PYTHON_VERSION
+        value: 3.9.18
