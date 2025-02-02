@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movimentos do Dia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h2>Movimentos do Dia - {{ controle.data.strftime('%d/%m/%Y') }}</h2>
+                <p>Veículo: {{ controle.veiculo.placa }} - KM Inicial: {{ controle.km_inicial }}</p>
+            </div>
+        </div>
+
+        <!-- Formulário de Novo Movimento -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Novo Movimento</h5>
+                <form id="formMovimento" onsubmit="return adicionarMovimento(event)">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Cliente</label>
+                                <input type="text" name="cliente" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Serviço</label>
+                                <select name="tipo_servico" class="form-control" required>
+                                    <option value="Normal">Normal (R$ 30,00)</option>
+                                    <option value="Especial">Especial (Valor Personalizado)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Valor</label>
+                                <input type="number" name="valor" class="form-control" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Descrição</label>
+                                <textarea name="descricao" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Forma de Pagamento</label>
+                                <select name="forma_pagamento" class="form-control" required>
+                                    <option value="PIX">PIX</option>
+                                    <option value="Dinheiro">Dinheiro</option>
+                                    <option value="A Prazo">A Prazo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Adicionar Movimento</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de Movimentos -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Movimentos Registrados</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Tipo</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Pagamento</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaMovimentos">
+                            {% for movimento in movimentos %}
+                            <tr>
+                                <td>{{ movimento.cliente }}</td>
+                                <td>{{ movimento.tipo_servico }}</td>
+                                <td>{{ movimento.descricao }}</td>
+                                <td>R$ {{ "%.2f"|format(movimento.valor) }}</td>
+                                <td>{{ movimento.forma_pagamento }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" onclick="editarMovimento({{ movimento.id }})">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="row mt-4">
+            <div class="col">
+                <button class="btn btn-success" onclick="finalizarDia()">
+                    <i class="bi bi-check-circle"></i> Finalizar Dia
+                </button>
+                <button class="btn btn-secondary" onclick="adicionarDespesa()">
+                    <i class="bi bi-cash"></i> Adicionar Despesa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Despesa -->
+    <div class="modal fade" id="modalDespesa" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adicionar Despesa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formDespesa">
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Despesa</label>
+                            <select name="tipo" class="form-control" required>
+                                <option value="Combustível">Combustível</option>
+                                <option value="Manutenção">Manutenção</option>
+                                <option value="Cliente">Pagamento para Cliente</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descrição</label>
+                            <textarea name="descricao" class="form-control" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Valor</label>
+                            <input type="number" name="valor" class="form-control" step="0.01" required>
+                        </div>
+                        <div id="camposCliente" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">Cliente</label>
+                                <input type="text" name="cliente" class="form-control">
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" name="reembolsavel" class="form-check-input" id="reembolsavel">
+                                <label class="form-check-label" for="reembolsavel">Reembolsável</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="salvarDespesa()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Finalização -->
+    <div class="modal fade" id="modalFinalizar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Finalizar Dia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formFinalizar">
+                        <div class="mb-3">
+                            <label class="form-label">KM Final</label>
+                            <input type="number" name="km_final" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Combustível (Litros)</label>
+                            <input type="number" name="combustivel_litros" class="form-control" step="0.01">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Valor Combustível</label>
+                            <input type="number" name="valor_combustivel" class="form-control" step="0.01">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Observações</label>
+                            <textarea name="observacoes" class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="salvarFinalizacao()">Finalizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
+    <script>
+        // Variáveis globais para os modais
+        const modalDespesa = new bootstrap.Modal(document.getElementById('modalDespesa'));
+        const modalFinalizar = new bootstrap.Modal(document.getElementById('modalFinalizar'));
+        
+        // Atualizar valor automático quando selecionar tipo de serviço
+        document.querySelector('select[name="tipo_servico"]').addEventListener('change', function(e) {
+            const valorInput = document.querySelector('input[name="valor"]');
+            if (e.target.value === 'Normal') {
+                valorInput.value = '30.00';
+            } else {
+                valorInput.value = '';
+            }
+        });
+
+        // Mostrar campos de cliente quando tipo de despesa for "Cliente"
+        document.querySelector('select[name="tipo"]').addEventListener('change', function(e) {
+            const camposCliente = document.getElementById('camposCliente');
+            camposCliente.style.display = e.target.value === 'Cliente' ? 'block' : 'none';
+        });
+
+        async function adicionarMovimento(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Movimento adicionado com sucesso!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    form.reset();
+                    window.location.reload();
+                } else {
+                    throw new Error('Erro ao adicionar movimento');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Erro ao adicionar movimento'
+                });
+            }
+        }
+
+        async function editarMovimento(id) {
+            // Implementar edição posteriormente
+            Swal.fire({
+                icon: 'info',
+                title: 'Em desenvolvimento',
+                text: 'Funcionalidade de edição será implementada em breve'
+            });
+        }
+
+        function adicionarDespesa() {
+            document.getElementById('formDespesa').reset();
+            modalDespesa.show();
+        }
+
+        async function salvarDespesa() {
+            const form = document.getElementById('formDespesa');
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/despesa', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    modalDespesa.hide();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Despesa registrada com sucesso!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    throw new Error('Erro ao registrar despesa');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Erro ao registrar despesa'
+                });
+            }
+        }
+
+        function finalizarDia() {
+            modalFinalizar.show();
+        }
+
+        async function salvarFinalizacao() {
+            const form = document.getElementById('formFinalizar');
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(`/finalizar-dia/{{ controle.id }}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    throw new Error('Erro ao finalizar dia');
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Erro ao finalizar dia'
+                });
+            }
+        }
+    </script>
+</body>
+</html> 
