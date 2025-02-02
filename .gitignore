@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# Databases
+*.db
+*.sqlite3
+
+# Excel
+~$*.xlsx
+*.xlsx
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.*
+
+# Outros
+instance/ 
