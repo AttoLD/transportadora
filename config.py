@@ -5,10 +5,10 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
     
     # Configuração do banco de dados
-    if os.environ.get('FLASK_ENV') == 'production':
+    if os.environ.get('RENDER') == 'true':
         # URL do banco PostgreSQL no Render
-        database_url = os.environ.get('DATABASE_URL', 'postgresql://transportadora_db_user:ZwqiPqzWIcZU5dwZUWLjQiEWbNVOdBgd@dpg-cuftrshopnds73b8vteg-a/transportadora_db')
-        if database_url.startswith("postgres://"):
+        database_url = os.environ.get('DATABASE_URL')
+        if database_url and database_url.startswith("postgres://"):
             database_url = database_url.replace("postgres://", "postgresql://", 1)
     else:
         # SQLite local para desenvolvimento
