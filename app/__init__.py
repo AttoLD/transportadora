@@ -7,10 +7,12 @@ from flask_talisman import Talisman
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+from authlib.integrations.flask_client import OAuth
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
+oauth = OAuth()
 login_manager.login_view = 'auth.login'
 login_manager.login_message = 'Por favor, faça login para acessar esta página.'
 
@@ -21,6 +23,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    oauth.init_app(app)
     Talisman(app, force_https=True)
 
     from app.routes import main, movimentos, relatorios, auth

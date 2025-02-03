@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-4">Bem-vindo ao Sistema de Transportadora</h1>
+        
+        {% if current_user.is_authenticated %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <a href="{{ url_for('veiculos.index') }}" 
+                   class="block p-6 bg-purple-100 rounded-lg hover:bg-purple-200 transition">
+                    <h2 class="text-xl font-semibold mb-2">Veículos</h2>
+                    <p class="text-gray-600">Gerenciar veículos da frota</p>
+                </a>
+                
+                <a href="{{ url_for('controles.index') }}"
+                   class="block p-6 bg-blue-100 rounded-lg hover:bg-blue-200 transition">
+                    <h2 class="text-xl font-semibold mb-2">Controle Diário</h2>
+                    <p class="text-gray-600">Registrar movimentações e despesas</p>
+                </a>
+                
+                <a href="{{ url_for('relatorios.index') }}"
+                   class="block p-6 bg-green-100 rounded-lg hover:bg-green-200 transition">
+                    <h2 class="text-xl font-semibold mb-2">Relatórios</h2>
+                    <p class="text-gray-600">Visualizar relatórios e análises</p>
+                </a>
+            </div>
+        {% else %}
+            <p class="text-gray-600">Por favor, faça login para acessar o sistema.</p>
+            <div class="mt-4">
+                <a href="{{ url_for('auth.login') }}"
+                   class="inline-block px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                    Fazer Login
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
