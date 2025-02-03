@@ -1,12 +1,10 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import User
-from app import db
-from authlib.integrations.flask_client import OAuth
+from app import db, oauth
 import os
 
 bp = Blueprint('auth', __name__)
-oauth = OAuth()
 
 # Configuração do Google OAuth
 google = oauth.register(
@@ -23,33 +21,17 @@ google = oauth.register(
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-        
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
         
-        try:
-            if user is None or not user.check_password(password):
-                current_app.logger.info(f'Falha no login para usuário: {username}')
-                flash('Usuário ou senha inválidos')
-                return redirect(url_for('auth.login'))
-            
+        if user and user.check_password(password):
             login_user(user)
-            current_app.logger.info(f'Login bem sucedido para usuário: {username}')
             next_page = request.args.get('next')
-            if not next_page or not next_page.startswith('/'):
-                next_page = url_for('main.index')
-            return redirect(next_page)
-            
-        except Exception as e:
-            current_app.logger.error(f'Erro no login: {str(e)}')
-            db.session.rollback()
-            flash('Ocorreu um erro. Por favor, tente novamente.')
-            return redirect(url_for('auth.login'))
-    
+            return redirect(next_page or url_for('main.index'))
+        
+        flash('Usuário ou senha inválidos')
     return render_template('auth/login.html')
 
 @bp.route('/google-login')
@@ -81,24 +63,29 @@ def google_authorize():
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-        
     if request.method == 'POST':
-        username = request.form.get('username')
+        firstname = request.form.get('firstname')
+        lastname = request.form.get('lastname')
+        email = request.form.get('email')
         password = request.form.get('password')
         
-        if User.query.filter_by(username=username).first():
-            flash('Este usuário já existe')
+        if User.query.filter_by(email=email).first():
+            flash('Email já cadastrado')
             return redirect(url_for('auth.register'))
-            
-        user = User(username=username)
+        
+        user = User(
+            username=email,
+            email=email,
+            firstname=firstname,
+            lastname=lastname
+        )
         user.set_password(password)
+        
         db.session.add(user)
         db.session.commit()
         
-        flash('Cadastro realizado com sucesso!')
-        return redirect(url_for('auth.login'))
+        login_user(user)
+        return redirect(url_for('main.index'))
         
     return render_template('auth/register.html')
 
@@ -110,4 +97,4 @@ def forgot_password():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('main.index')) 
+    return redirect(url_for('auth.login')) 
