@@ -1,11 +1,15 @@
-from flask import Blueprint, render_template
+from flask import render_template, Blueprint
 from flask_login import login_required
-from app.models import Veiculo
 
 bp = Blueprint('relatorios', __name__)
 
 @bp.route('/')
 @login_required
 def index():
-    veiculos = Veiculo.query.all()
-    return render_template('relatorios.html', veiculos=veiculos) 
+    return render_template('relatorios.html')
+
+@bp.route('/gerar', methods=['POST'])
+@login_required
+def gerar_relatorio():
+    # Implementar a geração do relatório
+    return "Relatório será implementado em breve" 
