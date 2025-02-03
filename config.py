@@ -1,9 +1,13 @@
 import os
 from urllib.parse import urlparse
 import logging
+from dotenv import load_dotenv
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'chave-secreta-padrao'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'você-nunca-adivinhará'
     
     # Configuração do banco de dados
     try:
@@ -25,8 +29,7 @@ class Config:
             }
         else:
             # SQLite local para desenvolvimento
-            basedir = os.path.abspath(os.path.dirname(__file__))
-            database_url = 'sqlite:///' + os.path.join(basedir, 'instance', 'transportadora.db')
+            database_url = 'sqlite:///' + os.path.join(basedir, 'app.db')
         
         SQLALCHEMY_DATABASE_URI = database_url
         SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -34,3 +37,7 @@ class Config:
     except Exception as e:
         logging.error(f"Erro na configuração do banco de dados: {str(e)}")
         raise 
+
+    # Configurações do Google OAuth
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET') 

@@ -7,15 +7,9 @@
         
         {% if current_user.is_authenticated %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <a href="{{ url_for('veiculos.index') }}" 
+                <a href="{{ url_for('movimentos.index') }}" 
                    class="block p-6 bg-purple-100 rounded-lg hover:bg-purple-200 transition">
-                    <h2 class="text-xl font-semibold mb-2">Veículos</h2>
-                    <p class="text-gray-600">Gerenciar veículos da frota</p>
-                </a>
-                
-                <a href="{{ url_for('controles.index') }}"
-                   class="block p-6 bg-blue-100 rounded-lg hover:bg-blue-200 transition">
-                    <h2 class="text-xl font-semibold mb-2">Controle Diário</h2>
+                    <h2 class="text-xl font-semibold mb-2">Movimentações</h2>
                     <p class="text-gray-600">Registrar movimentações e despesas</p>
                 </a>
                 
